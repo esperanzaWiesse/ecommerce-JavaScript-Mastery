@@ -1,4 +1,4 @@
-import {Account, Client, Avatars, OAuthProvider, Databases } from 'react-native-appwrite';
+import {Account, Client, Avatars, OAuthProvider, Databases, Query } from 'react-native-appwrite';
 
 // permite el manejo de deep linking en react native 
 import * as Linking from 'expo-linking'; // import * as Linking -> significa se importa todo el contenido del módulo expo-linking y se 
@@ -89,3 +89,56 @@ export async function getCurrentUser(){
         return null;
     }
 }
+
+export async function getLatestProperties() {
+    try{
+        const result = await databases.listDocuments(
+            config.databaseId!,
+            config.propertiesCollectionId!,
+            [Query.orderAsc('$createdAt'), Query.limit(5)]
+        )
+
+        return result.documents;
+    } catch (error) {
+        console.error(error);
+        return [];
+    }
+}
+
+export async function getProperties({filter, query, limit}: { 
+    filter: string;
+    query: string;
+    limit?: number;
+ }) {
+    try {
+        const buildQuery = [Query.orderAsc('$createAt')];
+
+        if(filter && filter != 'All') {
+            buildQuery.push(Query.equal('type', filter));
+        }
+
+        if(query){
+            buildQuery.push(
+                Query.or([
+                    Query.search('name', query),
+                    Query.search('address', query),
+                    Query.search('type', query),
+                ])
+            )
+        }
+
+        if(limit) buildQuery.push(Query.limit(limit)); 
+
+         const result = await databases.listDocuments(
+            config.databaseId!,
+            config.propertiesCollectionId!,
+            buildQuery,
+        )
+
+        return result.documents;
+
+    } catch (error) {
+        console.error(error);
+        return [];
+    }
+ }

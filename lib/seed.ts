@@ -101,6 +101,7 @@ function getRandomSubset<T>(
           }
         );
         agents.push(agent);
+        // console.log(`Seeded ${agent} agents.`);
       }
       console.log(`Seeded ${agents.length} agents.`);
   
